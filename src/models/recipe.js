@@ -1,9 +1,11 @@
 import { Schema, model } from "mongoose";
+import { Category } from "./category.js";
+import { Ingredient } from "./ingredient.js";
 
 const recipeIngredientSchema = new Schema(
   {
-    ingredient: { type: Schema.Types.ObjectId, ref: "Ingredient", required: true },
-    amount: { type: String, required: true, trim: true },
+    id: { type: String, ref: "Ingredient", required: true },
+    measure: { type: String, required: true, trim: true },
   },
   { _id: false }
 );
@@ -14,7 +16,10 @@ const recipeSchema = new Schema(
     description: { type: String, required: true, trim: true },
     cookingTime: { type: Number, required: true, min: 1 },
     calories: { type: Number, min: 0 },
-    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    category: {
+      type: String,
+      required: true
+    },
     ingredients: { type: [recipeIngredientSchema], default: [] },
     instructions: { type: String, required: true, trim: true },
     image: { type: String, required: true },
