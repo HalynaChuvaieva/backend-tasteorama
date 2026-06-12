@@ -24,6 +24,7 @@ app.use(authRoutes);
 app.use(recipesRoutes);
 app.use(categoriesRoutes);
 app.use(userRoutes);
+// app.use(userRoutes);
 
 app.use(notFoundHandler);
 
