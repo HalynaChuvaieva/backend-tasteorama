@@ -5,10 +5,6 @@ import { recipeIdSchema } from "../validations/recipesValidation.js";
 
 const router = Router();
 
-router.get(
-  "/api/recipes/:recipeId",
-  celebrate(recipeIdSchema),
-  getRecipeById
-);
+router.get("/api/recipes/:recipeId", celebrate(recipeIdSchema), getRecipeById);
 
 export default router;

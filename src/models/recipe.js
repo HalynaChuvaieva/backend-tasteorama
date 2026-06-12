@@ -2,64 +2,23 @@ import { Schema, model } from "mongoose";
 
 const recipeIngredientSchema = new Schema(
   {
-    ingredient: {
-      type: Schema.Types.ObjectId,
-      ref: "Ingredient",
-      required: true,
-    },
-    amount: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    ingredient: { type: Schema.Types.ObjectId, ref: "Ingredient", required: true },
+    amount: { type: String, required: true, trim: true },
   },
   { _id: false }
 );
 
 const recipeSchema = new Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    cookingTime: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    calories: {
-      type: Number,
-      min: 0,
-    },
-    category: {
-      type: Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-    },
-    ingredients: {
-      type: [recipeIngredientSchema],
-      default: [],
-    },
-    instructions: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    image: {
-      type: String,
-      required: true,
-    },
-    owner: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, required: true, trim: true },
+    cookingTime: { type: Number, required: true, min: 1 },
+    calories: { type: Number, min: 0 },
+    category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    ingredients: { type: [recipeIngredientSchema], default: [] },
+    instructions: { type: String, required: true, trim: true },
+    image: { type: String, required: true },
+    owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );

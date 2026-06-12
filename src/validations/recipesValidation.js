@@ -14,5 +14,4 @@ export const recipeIdSchema = {
 };
 
 export const createRecipeSchema = {};
-
 export const updateRecipeSchema = {};
