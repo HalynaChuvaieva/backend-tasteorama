@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import { errors } from 'celebrate';
 import cookieParser from 'cookie-parser';
+import ingredientsRouter from './routes/ingredientsRoute.js';
 
 const PORT = process.env.PORT ?? 3000;
 const app = express();
@@ -22,6 +23,8 @@ app.use(cookieParser());
 app.use(authRoutes);
 app.use(recipesRoutes);
 app.use(userRoutes);
+
+app.use(ingredientsRouter);
 
 app.use(notFoundHandler);
 
