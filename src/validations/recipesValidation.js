@@ -12,18 +12,15 @@ export const getAllRecipesSchema = {
 };
 
 const objectIdValidator = (value, helpers) => {
-  return !isValidObjectId(value) ? helpers.message('Invalid id format') : value;
+  return !isValidObjectId(value) ? helpers.message("Invalid id format") : value;
 };
 
 
 export const recipeIdSchema = {
-
+  [Segments.PARAMS]: Joi.object({
+    recipeId: Joi.string().custom(objectIdValidator).required(),
+  }),
 };
 
-export const createRecipeSchema = {
-
-};
-
-export const updateRecipeSchema = {
-
-};
+export const createRecipeSchema = {};
+export const updateRecipeSchema = {};

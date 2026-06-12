@@ -1,4 +1,5 @@
 import createHttpError from "http-errors";
+import { getRecipeByIdService } from "../services/recipes.js";
 import { Recipe } from "../models/recipe.js";
 
 export const getAllRecipes = async (req, res, next) => {
@@ -11,7 +12,6 @@ export const getAllRecipes = async (req, res, next) => {
 
     const recipesQuery = Recipe.find();
 
-    // 1. Змінили 'name' на 'title', бо в базі саме 'title'
     if (keyword) {
       recipesQuery.where({ title: { $regex: keyword, $options: "i" } });
     }
@@ -20,9 +20,8 @@ export const getAllRecipes = async (req, res, next) => {
       recipesQuery.where("category").equals(category);
     }
 
-    // 2. Змінили 'ingredients.ingredient' на 'ingredients.id'
     if (ingredient) {
-      recipesQuery.where("ingredients.id").equals(ingredient);
+      recipesQuery.where("ingredients.ingredient").equals(ingredient);
     }
 
     const [totalRecipes, recipes] = await Promise.all([
@@ -30,9 +29,7 @@ export const getAllRecipes = async (req, res, next) => {
       recipesQuery
         .skip(skip)
         .limit(parsedPerPage)
-        .populate("category", "name")
-        // 3. Змінили 'ingredients.ingredient' на 'ingredients.id'
-        .populate("ingredients.id", "name img desc"),
+        .populate("ingredients.ingredient", "name desc img"),
     ]);
 
     const totalPages = Math.ceil(totalRecipes / parsedPerPage);
@@ -49,18 +46,24 @@ export const getAllRecipes = async (req, res, next) => {
   }
 };
 
-export const getRecipeById = async (req, res) => {
 
+export const getRecipeById = async (req, res, next) => {
+  try {
+    const { recipeId } = req.params;
+    const recipe = await getRecipeByIdService(recipeId);
+    if (!recipe) {
+      throw createHttpError(404, "Recipe not found");
+    }
+    res.status(200).json({
+      status: 200,
+      message: "Recipe retrieved successfully",
+      data: recipe,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const createRecipe = async (req, res) => {
-
-};
-
-export const deleteRecipe = async (req, res) => {
-
-};
-
-export const updateRecipe = async (req, res) => {
-
-};
+export const createRecipe = async (req, res) => {};
+export const deleteRecipe = async (req, res) => {};
+export const updateRecipe = async (req, res) => {};
