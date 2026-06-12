@@ -8,18 +8,21 @@ import { sendEmail } from "../utils/sendMail.js";
 import handlebars from 'handlebars';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+
+
 export const registerUser = async (req, res) => {
-  const { email, password } = req.body;
+  const {name, email, password } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw createHttpError(400, 'Email in use');
+    throw createHttpError(400, 'Email already in use');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const newUser = await User.create({
     email,
+    name,
     password: hashedPassword,
   });
 
@@ -129,7 +132,7 @@ export const requestResetEmail = async (req, res) => {
   const template = handlebars.compile(templateSource);
 
   const html = template({
-    name: user.username,
+    name: user.name,
     link: `${process.env.FRONTEND_DOMAIN}/reset-password?token=${resetToken}`,
   });
 
