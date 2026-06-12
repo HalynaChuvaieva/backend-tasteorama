@@ -4,8 +4,8 @@ import { Ingredient } from "./ingredient.js";
 
 const recipeIngredientSchema = new Schema(
   {
-    ingredient: { type: Schema.Types.ObjectId, ref: "Ingredient", required: true },
-    amount: { type: String, required: true, trim: true },
+    id: { type: String, ref: "Ingredient", required: true },
+    measure: { type: String, required: true, trim: true },
   },
   { _id: false }
 );

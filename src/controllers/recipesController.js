@@ -1,6 +1,7 @@
 import createHttpError from "http-errors";
 import { getRecipeByIdService } from "../services/recipes.js";
 import { Recipe } from "../models/recipe.js";
+import { Ingredient } from "../models/ingredient.js";
 
 export const getAllRecipes = async (req, res, next) => {
   try {
@@ -12,16 +13,33 @@ export const getAllRecipes = async (req, res, next) => {
 
     const recipesQuery = Recipe.find();
 
+    // 1. Пошук за словом у назві рецепта
     if (keyword) {
       recipesQuery.where({ title: { $regex: keyword, $options: "i" } });
     }
 
+    // 2. Пошук за категорією (прямий збіг рядка)
     if (category) {
-      recipesQuery.where("category").equals(category);
+      // Використовуємо regex для пошуку без врахування регістру (щоб "chicken" і "Chicken" працювали)
+      recipesQuery.where({ category: { $regex: category, $options: "i" } });
     }
 
+    // 3. Пошук за НАЗВОЮ інгредієнта
     if (ingredient) {
-      recipesQuery.where("ingredients.ingredient").equals(ingredient);
+      // Крок А: Шукаємо інгредієнт за назвою в колекції Ingredients
+      const foundIngredient = await Ingredient.findOne({
+        name: { $regex: ingredient, $options: "i" } // 'i' означає case-insensitive
+      });
+
+      if (foundIngredient) {
+        // Крок Б: Якщо інгредієнт знайдено, беремо його ID і фільтруємо рецепти
+        // Оскільки в базі ID збережено як рядок, перетворюємо foundIngredient._id на String
+        recipesQuery.where("ingredients.id").equals(foundIngredient._id.toString());
+      } else {
+        // Крок В: Якщо такого інгредієнта не існує, змушуємо запит повернути порожній масив
+        // (шукаємо за гарантовано неіснуючим значенням)
+        recipesQuery.where("ingredients.id").equals("not-found");
+      }
     }
 
     const [totalRecipes, recipes] = await Promise.all([
@@ -29,7 +47,7 @@ export const getAllRecipes = async (req, res, next) => {
       recipesQuery
         .skip(skip)
         .limit(parsedPerPage)
-        .populate("ingredients.ingredient", "name desc img"),
+        .populate("ingredients.id", "name img desc"),
     ]);
 
     const totalPages = Math.ceil(totalRecipes / parsedPerPage);
