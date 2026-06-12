@@ -8,13 +8,9 @@ import {
 
 const router = Router();
 
-router.patch(
-  '/users/me/avatar',
-  authenticate,
-  upload.single('avatar'),
-  updateUserAvatar,
-);
+router.use('/users', authenticate);
 
-router.get('/users/me/', authenticate, getCurrentUser);
+router.patch('/users/me/avatar', upload.single('avatar'), updateUserAvatar);
+router.get('/users/me/', getCurrentUser);
 
 export default router;
