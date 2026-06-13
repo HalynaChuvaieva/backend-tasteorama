@@ -11,6 +11,13 @@ export const getAllRecipesSchema = {
   }),
 };
 
+export const getMyRecipesSchema = {
+  [Segments.QUERY]: Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    perPage: Joi.number().integer().min(1).max(50).default(10),
+  }),
+};
+
 const objectIdValidator = (value, helpers) => {
   return !isValidObjectId(value) ? helpers.message('Invalid id format') : value;
 };

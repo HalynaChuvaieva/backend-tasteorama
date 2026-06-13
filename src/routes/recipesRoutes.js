@@ -1,16 +1,23 @@
-import { Router } from "express";
-import { celebrate } from "celebrate";
-import { authenticate } from "../middleware/authenticate.js";
+import { Router } from 'express';
+import { celebrate } from 'celebrate';
+import { authenticate } from '../middleware/authenticate.js';
 import {
-    getAllRecipes,
-    getRecipeById,
-    deleteRecipeFromFavorite,
-    getFavoriteRecipes,
- } from "../controllers/recipesController.js";
+  getAllRecipes,
+  getRecipeById,
+  deleteRecipeFromFavorite,
+  getFavoriteRecipes,
+  getMyRecipes,
+  createRecipe,
+  addRecipeToFavorites,
+} from '../controllers/recipesController.js';
 import {
-    getAllRecipesSchema,
-    recipeIdSchema,
- } from "../validations/recipesValidation.js";
+  getAllRecipesSchema,
+  getMyRecipesSchema,
+  recipeIdSchema,
+  createRecipeSchema,
+} from '../validations/recipesValidation.js';
+import { parseIngredients } from '../middleware/recipeParse.js';
+import { upload } from '../middleware/multer.js';
 
 const router = Router();
 
@@ -32,15 +39,19 @@ router.post(
   celebrate(recipeIdSchema),
   addRecipeToFavorites,
 );
-router.get("/api/recipes/favorites", authenticate, getFavoriteRecipes);
-
-router.get("/api/recipes/:recipeId", celebrate(recipeIdSchema), getRecipeById);
+router.get('/api/recipes/favorites', authenticate, getFavoriteRecipes);
 
 router.delete(
-  "/api/recipes/:recipeId/favorite",
+  '/api/recipes/:recipeId/favorite',
   authenticate,
   celebrate(recipeIdSchema),
   deleteRecipeFromFavorite,
 );
 
+router.get(
+  '/api/my/recipes',
+  authenticate,
+  celebrate(getMyRecipesSchema),
+  getMyRecipes,
+);
 export default router;
