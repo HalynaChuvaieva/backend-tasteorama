@@ -5,9 +5,6 @@ import { Ingredient } from '../models/ingredient.js';
 import { Category } from '../models/category.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import { User } from '../models/user.js';
-import { getRecipeByIdService } from '../services/recipes.js';
-import { Recipe } from '../models/recipe.js';
-import { Ingredient } from '../models/ingredient.js';
 
 export const getAllRecipes = async (req, res, next) => {
   try {

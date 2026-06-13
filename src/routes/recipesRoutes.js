@@ -7,12 +7,17 @@ import {
   deleteRecipeFromFavorite,
   getFavoriteRecipes,
   getMyRecipes,
+  createRecipe,
+  addRecipeToFavorites,
 } from '../controllers/recipesController.js';
 import {
   getAllRecipesSchema,
   getMyRecipesSchema,
   recipeIdSchema,
+  createRecipeSchema,
 } from '../validations/recipesValidation.js';
+import { parseIngredients } from '../middleware/recipeParse.js';
+import { upload } from '../middleware/multer.js';
 
 const router = Router();
 
@@ -35,25 +40,6 @@ router.post(
   addRecipeToFavorites,
 );
 router.get('/api/recipes/favorites', authenticate, getFavoriteRecipes);
-
-router.get('/api/recipes/:recipeId', celebrate(recipeIdSchema), getRecipeById);
-
-router.delete(
-  '/api/recipes/:recipeId/favorite',
-  authenticate,
-  celebrate(recipeIdSchema),
-  deleteRecipeFromFavorite,
-);
-
-router.post(
-  '/api/recipes/:recipeId/favorite',
-  authenticate,
-  celebrate(recipeIdSchema),
-  addRecipeToFavorites,
-);
-router.get('/api/recipes/favorites', authenticate, getFavoriteRecipes);
-
-router.get('/api/recipes/:recipeId', celebrate(recipeIdSchema), getRecipeById);
 
 router.delete(
   '/api/recipes/:recipeId/favorite',
