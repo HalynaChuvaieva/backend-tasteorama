@@ -1,8 +1,6 @@
 import createHttpError from 'http-errors';
-import {
-  getRecipeByIdService,
-  addRecipeToFavoritesService,
-} from '../services/recipes.js';
+import { User } from '../models/user.js';
+import { getRecipeByIdService } from '../services/recipes.js';
 import { Recipe } from '../models/recipe.js';
 import { Ingredient } from '../models/ingredient.js';
 
@@ -87,19 +85,68 @@ export const getRecipeById = async (req, res, next) => {
 };
 
 export const createRecipe = async (req, res) => {};
-export const deleteRecipe = async (req, res) => {};
 export const updateRecipe = async (req, res) => {};
 
-export const addRecipeToFavorites = async (req, res, next) => {
+// Видаляємо рецепт з улюблених користувача
+export const deleteRecipeFromFavorite = async (req, res, next) => {
   try {
-    const { recipeId } = req.params;
+    const { recipeId } = req.params;// Отримуємо ID рецепта з параметрів запиту
+    const userId = req.user._id;// Отримуємо ID користувача з об'єкта req.user
 
-    const user = await addRecipeToFavoritesService(req.user._id, recipeId);
+    const recipe = await Recipe.findById(recipeId); // Перевіряємо, чи існує рецепт з таким ID
+
+    if (!recipe) {// Якщо рецепт не знайдено, повертаємо помилку 404
+      throw createHttpError(404, 'Recipe not found');
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(// Оновлюємо документ користувача, видаляючи рецепт з масиву favorites
+      userId,
+      {
+        $pull: { favorites: recipeId },// Використовуємо оператор $pull для видалення ID рецепта з масиву favorites
+      },
+      { new: true },// Параметр { new: true } повертає оновлений документ користувача після внесення змін
+    );
+
+    if (!updatedUser) {// Якщо користувача не знайдено (хоча це малоймовірно, оскільки він аутентифікований), повертаємо помилку 404
+      throw createHttpError(404, 'User not found');
+    }
 
     res.status(200).json({
       status: 200,
-      message: 'Recipe added to favorites',
-      data: user.favorites,
+      message: 'Recipe removed from favorites',
+      data: {
+        recipeId,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Отримуємо всі рецепти, які знаходяться у списку улюблених користувача
+export const getFavoriteRecipes = async (req, res, next) => {
+  try {
+  const userId = req.user._id; // Отримуємо ID користувача з об'єкта req.user
+
+  const user = await User.findById(userId).populate({// Знаходимо користувача за його ID та виконуємо популяцію поля favorites
+      path: "favorites",// Вказуємо шлях до поля favorites, яке містить масив ID рецептів
+      populate: {// Вказуємо, що ми хочемо отримати детальну інформацію про кожен рецепт, який знаходиться у favorites
+        path: "ingredients.id",// Вказуємо шлях до поля ingredients.id, яке містить ID інгредієнтів для кожного рецепта
+        select: "name img desc",// Вказуємо, що ми хочемо отримати лише поля name, img та desc для кожного інгредієнта
+      },
+    });
+
+    if (!user) {// Якщо користувача не знайдено (хоча це малоймовірно, оскільки він аутентифікований), повертаємо помилку 404
+      throw createHttpError(404, "User not found");
+    }
+
+    const favorites = user.favorites || [];// Отримуємо масив улюблених рецептів користувача. Якщо favorites відсутній, використовуємо порожній масив за замовчуванням
+
+    res.status(200).json({
+      status: 200,
+      message: "Favorite recipes retrieved successfully",
+      total: favorites.length,
+      data: favorites,
     });
   } catch (error) {
     next(error);
