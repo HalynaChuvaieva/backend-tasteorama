@@ -1,0 +1,25 @@
+import { model, Schema } from 'mongoose';
+
+const ingredientsSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  desc: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  img: {
+    type: String,
+    required: false,
+    // default: 'sadsdsadasfasfdasfas'
+  },
+  _id: {
+    type: Schema.Types.ObjectId,
+    required: true,
+  },
+});
+
+export const Ingredient = model('Ingredient', ingredientsSchema);
