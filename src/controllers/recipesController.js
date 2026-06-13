@@ -135,6 +135,28 @@ export const createRecipe = async (req, res) => {
   });
   res.status(201).json(recipe);
 };
+
+export const getMyRecipes = async (req, res) => {
+  const { page = 1, perPage = 10 } = req.query;
+
+  const parsedPage = Number(page);
+  const parsedPerPage = Number(perPage);
+  const skip = (parsedPage - 1) * parsedPerPage;
+  const recipesQuery = Recipe.find({ owner: req.user._id });
+
+  const [totalRecipes, recipes] = await Promise.all([
+    recipesQuery.clone().countDocuments(),
+    recipesQuery.skip(skip).limit(parsedPerPage),
+  ]);
+  const totalPages = Math.ceil(totalRecipes / parsedPerPage);
+  res.status(200).json({
+    page: parsedPage,
+    perPage: parsedPerPage,
+    totalRecipes,
+    totalPages,
+    recipes,
+  });
+};
 export const deleteRecipe = async (req, res) => {};
 export const createRecipe = async (req, res) => {};
 export const updateRecipe = async (req, res) => {};
