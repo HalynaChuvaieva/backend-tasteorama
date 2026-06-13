@@ -1,4 +1,9 @@
 import createHttpError from 'http-errors';
+import { getRecipeByIdService } from '../services/recipes.js';
+import { Recipe } from '../models/recipe.js';
+import { Ingredient } from '../models/ingredient.js';
+import { Category } from '../models/category.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import { User } from '../models/user.js';
 import { getRecipeByIdService } from '../services/recipes.js';
 import { Recipe } from '../models/recipe.js';
@@ -84,6 +89,53 @@ export const getRecipeById = async (req, res, next) => {
   }
 };
 
+export const createRecipe = async (req, res) => {
+  console.log(req.file, req.user);
+  if (!req.file) {
+    throw createHttpError(400, 'No file');
+  }
+
+  const {
+    title,
+    description,
+    time,
+    calories,
+    category,
+    ingredients,
+    instructions,
+  } = req.body;
+
+  const categoryExists = await Category.findOne({ name: category });
+  if (!categoryExists) {
+    throw createHttpError(400, 'Category not found');
+  }
+  const ingredientIds = ingredients.map((item) => item.id);
+  const uniqueIds = [...new Set(ingredientIds)];
+  const existingIngredientsCount = await Ingredient.countDocuments({
+    _id: { $in: uniqueIds },
+  });
+
+  if (existingIngredientsCount !== uniqueIds.length) {
+    throw createHttpError(400, 'One or more ingredients not found');
+  }
+
+  const result = await saveFileToCloudinary(req.file.buffer, req.user._id);
+  console.log(result);
+
+  const recipe = await Recipe.create({
+    title,
+    description,
+    time,
+    calories,
+    category,
+    ingredients,
+    instructions,
+    owner: req.user._id,
+    image: result.secure_url,
+  });
+  res.status(201).json(recipe);
+};
+export const deleteRecipe = async (req, res) => {};
 export const createRecipe = async (req, res) => {};
 export const updateRecipe = async (req, res) => {};
 

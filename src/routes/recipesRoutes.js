@@ -17,6 +17,14 @@ const router = Router();
 router.get('/api/recipes', celebrate(getAllRecipesSchema), getAllRecipes);
 
 router.get('/api/recipes/:recipeId', celebrate(recipeIdSchema), getRecipeById);
+router.post(
+  '/api/recipes/',
+  authenticate,
+  upload.single('image'),
+  parseIngredients,
+  celebrate(createRecipeSchema),
+  createRecipe,
+);
 
 router.post(
   '/api/recipes/:recipeId/favorite',
