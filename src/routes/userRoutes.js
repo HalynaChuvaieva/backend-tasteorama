@@ -6,6 +6,6 @@ const router = Router();
 
 router.use('/users', authenticate);
 
-router.get('/users/me/', getCurrentUser);
+router.get('/users/current/', getCurrentUser);
 
 export default router;
