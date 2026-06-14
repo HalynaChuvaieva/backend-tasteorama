@@ -1,13 +1,13 @@
-import { Schema, model } from "mongoose";
-import { Category } from "./category.js";
-import { Ingredient } from "./ingredient.js";
+import { Schema, model } from 'mongoose';
+import { Categories } from './categories.js';
+import { Ingredient } from './ingredient.js';
 
 const recipeIngredientSchema = new Schema(
   {
-    id: { type: String, ref: "Ingredient", required: true },
+    id: { type: String, ref: 'Ingredient', required: true },
     measure: { type: String, required: true, trim: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const recipeSchema = new Schema(
@@ -18,18 +18,18 @@ const recipeSchema = new Schema(
     calories: { type: Number, min: 0 },
     category: {
       type: String,
-      required: true
+      required: true,
     },
     ingredients: { type: [recipeIngredientSchema], default: [] },
     instructions: { type: String, required: true, trim: true },
     image: { type: String, required: true },
-    owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-recipeSchema.index({ title: "text", description: "text" });
+recipeSchema.index({ title: 'text', description: 'text' });
 recipeSchema.index({ category: 1 });
 recipeSchema.index({ owner: 1 });
 
-export const Recipe = model("Recipe", recipeSchema);
+export const Recipe = model('Recipe', recipeSchema);

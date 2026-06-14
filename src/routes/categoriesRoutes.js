@@ -3,6 +3,6 @@ import { getCategoriesController } from '../controllers/categoriesController.js'
 
 const router = Router();
 
-router.get('/categories', getCategoriesController);
+router.get('/api/categories', getCategoriesController);
 
 export default router;
