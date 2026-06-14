@@ -1,8 +1,8 @@
-import { model, Schema } from "mongoose";
+import { model, Schema } from 'mongoose';
 
 const userSchema = new Schema(
   {
-    username: {
+    name: {
       type: String,
       trim: true,
     },
@@ -10,7 +10,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
@@ -21,15 +21,18 @@ const userSchema = new Schema(
       required: false,
       default: 'https://ac.goit.global/fullstack/react/default-avatar.jpg',
     },
+    favorites: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Recipe',
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true },
 );
-
-userSchema.pre('save', function () {
-  if (!this.username) {
-    this.username = this.email;
-  }
-});
 
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
