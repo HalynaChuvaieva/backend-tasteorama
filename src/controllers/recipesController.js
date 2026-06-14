@@ -4,7 +4,7 @@ import {
   getRecipeByIdService,
 } from '../services/recipes.js';
 import { Recipe } from '../models/recipe.js';
-import { Ingredient } from '../models/ingredient.js';
+import { Ingredient } from '../models/ingredients.js';
 import { Category } from '../models/category.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import { User } from '../models/user.js';
