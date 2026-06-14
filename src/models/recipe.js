@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-// import { Category } from './category.js';
+import { Categories } from './categories.js';
 // import { Ingredient } from './ingredient.js';
 
 const recipeIngredientSchema = new Schema(
