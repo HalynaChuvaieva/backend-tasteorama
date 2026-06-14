@@ -1,0 +1,1001 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Tasteorama API",
+    "version": "1.0.0",
+    "description": "Повнофункціональний API для управління рецептами, інгредієнтами та улюбленими рецептами. Включає аутентифікацію користувачів, управління профілем, створення та пошук рецептів.",
+    "contact": {
+      "name": "Tasteorama Support",
+      "email": "support@tasteorama.com"
+    },
+    "license": {
+      "name": "ISC"
+    }
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "schemes": ["http", "https"],
+  "consumes": ["application/json", "multipart/form-data"],
+  "produces": ["application/json"],
+  "securityDefinitions": {
+    "cookieAuth": {
+      "type": "apiKey",
+      "in": "cookie",
+      "name": "accessToken",
+      "description": "JWT токен у cookie для аутентифікації"
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints для аутентифікації та управління сесією"
+    },
+    {
+      "name": "Recipes",
+      "description": "Endpoints для управління рецептами"
+    },
+    {
+      "name": "Favorites",
+      "description": "Endpoints для управління улюбленими рецептами"
+    },
+    {
+      "name": "Categories",
+      "description": "Endpoints для отримання категорій рецептів"
+    },
+    {
+      "name": "Ingredients",
+      "description": "Endpoints для отримання списку доступних інгредієнтів"
+    }
+  ],
+  "definitions": {
+    "User": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        },
+        "name": {
+          "type": "string",
+          "example": "Іван Петров",
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "ivan@example.com",
+          "maxLength": 128
+        },
+        "password": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "Пароль користувача (не повертається у відповіді)"
+        },
+        "avatar": {
+          "type": "string",
+          "example": "https://ac.goit.global/fullstack/react/default-avatar.jpg"
+        },
+        "favorites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RegisterRequest": {
+      "type": "object",
+      "required": ["name", "email", "password"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Іван Петров",
+          "maxLength": 16,
+          "description": "Ім'я користувача (до 16 символів)"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "ivan@example.com",
+          "maxLength": 128,
+          "description": "Email користувача (унікальний)"
+        },
+        "password": {
+          "type": "string",
+          "example": "Password123",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "Пароль (мінімум 8 символів)"
+        }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "example": "ivan@example.com",
+          "description": "Email користувача"
+        },
+        "password": {
+          "type": "string",
+          "example": "Password123",
+          "description": "Пароль користувача"
+        }
+      }
+    },
+    "Ingredient": {
+      "type": "object",
+      "required": ["_id", "name", "desc"],
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        },
+        "name": {
+          "type": "string",
+          "example": "Курине філе",
+          "description": "Назва інгредієнта"
+        },
+        "desc": {
+          "type": "string",
+          "example": "Свіже курине філе високої якості",
+          "description": "Опис інгредієнта"
+        },
+        "img": {
+          "type": "string",
+          "example": "https://example.com/chicken.jpg",
+          "description": "URL зображення інгредієнта"
+        }
+      }
+    },
+    "RecipeIngredient": {
+      "type": "object",
+      "required": ["id", "measure"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011",
+          "description": "ID інгредієнта"
+        },
+        "measure": {
+          "type": "string",
+          "example": "500g",
+          "description": "Кількість та одиниця виміру"
+        }
+      }
+    },
+    "Recipe": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "time",
+        "category",
+        "ingredients",
+        "instructions",
+        "image",
+        "owner"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        },
+        "title": {
+          "type": "string",
+          "example": "Паста Карбонара",
+          "maxLength": 64,
+          "description": "Назва рецепта"
+        },
+        "description": {
+          "type": "string",
+          "example": "Класичне італійське блюдо з беконом та вершковим соусом",
+          "maxLength": 200,
+          "description": "Короткий опис рецепта"
+        },
+        "time": {
+          "type": "number",
+          "example": 30,
+          "minimum": 1,
+          "maximum": 360,
+          "description": "Час приготування в хвилинах"
+        },
+        "calories": {
+          "type": "number",
+          "example": 450,
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Калорійність (опціонально)"
+        },
+        "category": {
+          "type": "string",
+          "example": "Основні страви",
+          "description": "Категорія рецепта"
+        },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecipeIngredientFull"
+          },
+          "minItems": 2,
+          "maxItems": 16,
+          "description": "Список інгредієнтів (мінімум 2, максимум 16)"
+        },
+        "instructions": {
+          "type": "string",
+          "example": "1. Зварити макаронів\n2. Смажити бекон\n3. Змішати інгредієнти",
+          "maxLength": 1200,
+          "description": "Покрокові інструкції приготування"
+        },
+        "image": {
+          "type": "string",
+          "example": "https://res.cloudinary.com/example/pasta.jpg",
+          "description": "URL зображення рецепта (з Cloudinary)"
+        },
+        "owner": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011",
+          "description": "ID автора рецепта"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RecipeIngredientFull": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "object",
+          "description": "Повна інформація про інгредієнт",
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "desc": {
+              "type": "string"
+            },
+            "img": {
+              "type": "string"
+            }
+          }
+        },
+        "measure": {
+          "type": "string"
+        }
+      }
+    },
+    "CreateRecipeRequest": {
+      "type": "object",
+      "required": [
+        "title",
+        "description",
+        "time",
+        "category",
+        "ingredients",
+        "instructions"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Паста Карбонара",
+          "maxLength": 64
+        },
+        "description": {
+          "type": "string",
+          "example": "Класичне італійське блюдо",
+          "maxLength": 200
+        },
+        "time": {
+          "type": "number",
+          "example": 30,
+          "minimum": 1,
+          "maximum": 360
+        },
+        "calories": {
+          "type": "number",
+          "example": 450,
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "category": {
+          "type": "string",
+          "example": "Основні страви"
+        },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RecipeIngredient"
+          },
+          "minItems": 2,
+          "maxItems": 16
+        },
+        "instructions": {
+          "type": "string",
+          "example": "Покрокові інструкції...",
+          "maxLength": 1200
+        },
+        "image": {
+          "type": "string",
+          "format": "binary",
+          "description": "Файл зображення (multipart form)"
+        }
+      }
+    },
+    "Category": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "507f1f77bcf86cd799439011"
+        },
+        "name": {
+          "type": "string",
+          "example": "Основні страви"
+        }
+      }
+    },
+    "RecipesListResponse": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "number",
+          "example": 1
+        },
+        "perPage": {
+          "type": "number",
+          "example": 10
+        },
+        "totalRecipes": {
+          "type": "number",
+          "example": 100
+        },
+        "totalPages": {
+          "type": "number",
+          "example": 10
+        },
+        "recipes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Recipe"
+          }
+        }
+      }
+    },
+    "RecipeDetailResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "example": "Рецепт успішно отримано"
+        },
+        "data": {
+          "$ref": "#/definitions/Recipe"
+        }
+      }
+    },
+    "MyRecipesResponse": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "number",
+          "example": 1
+        },
+        "perPage": {
+          "type": "number",
+          "example": 10
+        },
+        "totalRecipes": {
+          "type": "number",
+          "example": 5
+        },
+        "totalPages": {
+          "type": "number",
+          "example": 1
+        },
+        "recipes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Recipe"
+          }
+        }
+      }
+    },
+    "FavoritesResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "example": "Улюблені рецепти успішно отримано"
+        },
+        "total": {
+          "type": "number",
+          "example": 5
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Recipe"
+          }
+        }
+      }
+    },
+    "AddToFavoritesResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "example": "Рецепт додано до улюблених"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": ["507f1f77bcf86cd799439011"]
+        }
+      }
+    },
+    "RemoveFromFavoritesResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 200
+        },
+        "message": {
+          "type": "string",
+          "example": "Рецепт видалено з улюблених"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "recipeId": {
+              "type": "string",
+              "example": "507f1f77bcf86cd799439011"
+            }
+          }
+        }
+      }
+    },
+    "SessionRefreshResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Сесія оновлена"
+        }
+      }
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "number",
+          "example": 400
+        },
+        "message": {
+          "type": "string",
+          "example": "Помилка валідації"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Реєстрація нового користувача",
+        "description": "Створює новий акаунт користувача з зазначеним ім'ям, email та паролем. Після успішної реєстрації встановлюються cookies для аутентифікації.",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Користувач успішно зареєстрований",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "400": {
+            "description": "Некоректні дані або email уже існує",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Вхід в акаунт",
+        "description": "Аутентифікує користувача за email та паролем. При успішній аутентифікації створюється нова сесія та встановлюються cookies.",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успішний вхід",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "401": {
+            "description": "Невірні облікові дані",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Оновлення сесії",
+        "description": "Оновлює токени доступу та оновлення користувача. Вимагає наявності sessionId та refreshToken у cookies.",
+        "responses": {
+          "200": {
+            "description": "Сесія успішно оновлена",
+            "schema": {
+              "$ref": "#/definitions/SessionRefreshResponse"
+            }
+          },
+          "401": {
+            "description": "Відсутні облікові дані сесії або сесія закінчилася",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Вихід з акаунта",
+        "description": "Завершує користувальницьку сесію, видаляє cookies та дані сесії з БД.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Користувач успішно вийшов"
+          },
+          "401": {
+            "description": "Користувач не аутентифікований",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/recipes": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Отримати всі рецепти",
+        "description": "Повертає список всіх рецептів з підтримкою пошуку та фільтрації за категоріями, інгредієнтами та ключовими словами. Результати з пагінацією.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "default": 1,
+            "minimum": 1,
+            "description": "Номер сторінки для пагінації"
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "type": "number",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Кількість рецептів на сторінці (максимум 50)"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "type": "string",
+            "description": "Фільтр за категорією рецепта (без урахування регістру)"
+          },
+          {
+            "name": "ingredient",
+            "in": "query",
+            "type": "string",
+            "description": "Фільтр за назвою інгредієнта (без урахування регістру)"
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "type": "string",
+            "description": "Пошук за назвою або описом рецепта (без урахування регістру)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список рецептів успішно отримано",
+            "schema": {
+              "$ref": "#/definitions/RecipesListResponse"
+            }
+          },
+          "400": {
+            "description": "Некоректні параметри запиту",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/recipes/{recipeId}": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Отримати рецепт за ID",
+        "description": "Повертає повну інформацію про рецепт, включаючи деталі всіх інгредієнтів.",
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId рецепта"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Рецепт успішно отримано",
+            "schema": {
+              "$ref": "#/definitions/RecipeDetailResponse"
+            }
+          },
+          "404": {
+            "description": "Рецепт не знайдено",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/recipes/": {
+      "post": {
+        "tags": ["Recipes"],
+        "summary": "Створити новий рецепт",
+        "description": "Створює новий рецепт. Вимагає аутентифікацію. Зображення завантажується на Cloudinary. У тілі запиту JSON дані рецепта, у multipart - файл зображення.",
+        "consumes": ["multipart/form-data"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "title",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "maxLength": 64,
+            "description": "Назва рецепта"
+          },
+          {
+            "name": "description",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "maxLength": 200,
+            "description": "Опис рецепта"
+          },
+          {
+            "name": "time",
+            "in": "formData",
+            "required": true,
+            "type": "number",
+            "minimum": 1,
+            "maximum": 360,
+            "description": "Час приготування в хвилинах"
+          },
+          {
+            "name": "calories",
+            "in": "formData",
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10000,
+            "description": "Калорійність (опціонально)"
+          },
+          {
+            "name": "category",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "Категорія рецепта (повинна існувати в БД)"
+          },
+          {
+            "name": "ingredients",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "description": "JSON масив інгредієнтів: [{\"id\": \"...\", \"measure\": \"...\"}, ...]. Мінімум 2, максимум 16"
+          },
+          {
+            "name": "instructions",
+            "in": "formData",
+            "required": true,
+            "type": "string",
+            "maxLength": 1200,
+            "description": "Покрокові інструкції приготування"
+          },
+          {
+            "name": "image",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "description": "Зображення рецепта (jpg, png, webp)"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Рецепт успішно створено",
+            "schema": {
+              "$ref": "#/definitions/Recipe"
+            }
+          },
+          "400": {
+            "description": "Некоректні дані, відсутнє зображення або категорія не знайдена",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "401": {
+            "description": "Користувач не аутентифікований",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/my/recipes": {
+      "get": {
+        "tags": ["Recipes"],
+        "summary": "Отримати мої рецепти",
+        "description": "Повертає список рецептів, створених поточним аутентифікованим користувачем.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "type": "number",
+            "default": 1,
+            "minimum": 1,
+            "description": "Номер сторінки"
+          },
+          {
+            "name": "perPage",
+            "in": "query",
+            "type": "number",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 50,
+            "description": "Кількість рецептів на сторінці"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список рецептів користувача успішно отримано",
+            "schema": {
+              "$ref": "#/definitions/MyRecipesResponse"
+            }
+          },
+          "401": {
+            "description": "Користувач не аутентифікований",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/recipes/{recipeId}/favorite": {
+      "post": {
+        "tags": ["Favorites"],
+        "summary": "Додати рецепт до улюблених",
+        "description": "Додає рецепт до списку улюблених користувача. Вимагає аутентифікацію.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId рецепта"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Рецепт успішно додано до улюблених",
+            "schema": {
+              "$ref": "#/definitions/AddToFavoritesResponse"
+            }
+          },
+          "401": {
+            "description": "Користувач не аутентифікований",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Рецепт не знайдено",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Favorites"],
+        "summary": "Видалити рецепт з улюблених",
+        "description": "Видаляє рецепт зі списку улюблених користувача. Вимагає аутентифікацію.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recipeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId рецепта"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Рецепт успішно видалено з улюблених",
+            "schema": {
+              "$ref": "#/definitions/RemoveFromFavoritesResponse"
+            }
+          },
+          "401": {
+            "description": "Користувач не аутентифікований",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Рецепт не знайдено",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/recipes/favorites": {
+      "get": {
+        "tags": ["Favorites"],
+        "summary": "Отримати улюблені рецепти",
+        "description": "Повертає всі рецепти, додані поточним користувачем до улюблених. Вимагає аутентифікацію.",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список улюблених рецептів успішно отримано",
+            "schema": {
+              "$ref": "#/definitions/FavoritesResponse"
+            }
+          },
+          "401": {
+            "description": "Користувач не аутентифікований",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Отримати всі категорії",
+        "description": "Повертає список всіх доступних категорій рецептів.",
+        "responses": {
+          "200": {
+            "description": "Список категорій успішно отримано",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Category"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ingredients": {
+      "get": {
+        "tags": ["Ingredients"],
+        "summary": "Отримати всі інгредієнти",
+        "description": "Повертає повний список всіх доступних інгредієнтів з описами та зображеннями.",
+        "responses": {
+          "200": {
+            "description": "Список інгредієнтів успішно отримано",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Ingredient"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -11,6 +11,8 @@ import authRoutes from './routes/authRoutes.js';
 // import userRoutes from './routes/userRoutes.js';
 import { errors } from 'celebrate';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './swagger-output.json' with { type: 'json' };
 import ingredientsRouter from './routes/ingredientsRoute.js';
 
 const PORT = process.env.PORT ?? 3000;
@@ -24,6 +26,7 @@ app.use(cookieParser());
 app.use(authRoutes);
 app.use(recipesRoutes);
 app.use(categoriesRoutes);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // app.use(userRoutes);
 
 app.use(ingredientsRouter);
@@ -38,4 +41,5 @@ await connectMongoDB();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`Docs available at /api-docs`);
 });
