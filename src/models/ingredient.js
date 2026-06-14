@@ -1,7 +1,11 @@
-import { model, Schema } from "mongoose";
+import { model, Schema } from 'mongoose';
 
 const ingredientSchema = new Schema(
   {
+    _id: {
+      type: String,
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -14,12 +18,12 @@ const ingredientSchema = new Schema(
     img: {
       type: String,
       required: true,
-    }
+    },
   },
   {
     versionKey: false,
-    timestamps: false
-  }
+    timestamps: false,
+  },
 );
 
 export const Ingredient = model('Ingredient', ingredientSchema);

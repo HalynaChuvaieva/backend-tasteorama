@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema } from 'mongoose';
 
 const userSchema = new Schema(
   {
@@ -10,7 +10,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
@@ -20,6 +20,15 @@ const userSchema = new Schema(
       type: String,
       required: false,
       default: 'https://ac.goit.global/fullstack/react/default-avatar.jpg',
+    },
+    favorites: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'Recipe',
+        },
+      ],
+      default: [],
     },
   },
   { timestamps: true },
