@@ -12,7 +12,7 @@ import userRoutes from './routes/userRoutes.js';
 import { errors } from 'celebrate';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from './swagger-output.json' with { type: 'json' };
+import swaggerDocument from '../swagger-output.json' with { type: 'json' };
 import ingredientsRouter from './routes/ingredientsRoute.js';
 
 const PORT = process.env.PORT ?? 3000;
@@ -27,7 +27,6 @@ app.use(authRoutes);
 app.use(recipesRoutes);
 app.use(categoriesRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-// app.use(userRoutes);
 app.use(userRoutes);
 
 app.use(ingredientsRouter);

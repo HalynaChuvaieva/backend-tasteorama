@@ -2,7 +2,7 @@
 
 ## ✅ Що було зроблено
 
-Створена **повна професійна Swagger 2.0 документація** для API проекту Tasteorama. Документація готова для використання QA-інженерами та фронтенд-розробниками.
+Створена **повна професійна OpenAPI 3.0 документація** для API проекту Tasteorama. Документація готова для використання QA-інженерами та фронтенд-розробниками.
 
 ### 📋 Структура документації
 
@@ -31,11 +31,14 @@
 
 ```
 - Authentication (4 endpoint)
+- Users (1 endpoint) 🆕
 - Recipes (3 endpoint)
 - Favorites (3 endpoint)
 - Categories (1 endpoint)
 - Ingredients (1 endpoint)
 ```
+
+**Всього: 15 endpoints**
 
 #### 4. **Endpoints - Повний список**
 
@@ -69,7 +72,29 @@
 - **Відповідь**: 204 - No Content
 - **Помилки**: 401 - Не аутентифіковано
 
+---👤 **USERS (Користувачі)** 🆕
+
+#### GET /users/current/
+
+- **Опис**: Отримати інформацію про поточного користувача (ВИМАГАЄ AUTHENTICATION)
+- **Вимагає**: Authentication (cookie з accessToken)
+- **Відповідь**: 200 - User об'єкт
+  ```json
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "avatar": "https://example.com/avatar.jpg",
+    "favorites": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"],
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-16T15:45:00Z"
+  }
+  ```
+- **Помилки**: 401 - Не аутентифіковано
+
 ---
+
+###
 
 ### 🍳 **RECIPES (Рецепти)**
 
