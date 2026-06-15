@@ -117,6 +117,10 @@ const doc = {
       description: 'Endpoints для аутентифікації користувачів',
     },
     {
+      name: 'Users',
+      description: 'Endpoints для управління профілем користувача',
+    },
+    {
       name: 'Recipes',
       description: 'Endpoints для управління рецептами',
     },
@@ -135,13 +139,13 @@ const doc = {
   ],
 };
 
-const outputFile = './swagger-output.json';
+const outputFile = '../swagger-output.json';
 const routes = [
-  './routes/authRoutes.js',
-  './routes/userRoutes.js',
-  './routes/recipesRoutes.js',
-  './routes/categoriesRoutes.js',
-  './routes/ingredientsRoute.js',
+  './src/routes/authRoutes.js',
+  './src/routes/userRoutes.js',
+  './src/routes/recipesRoutes.js',
+  './src/routes/categoriesRoutes.js',
+  './src/routes/ingredientsRoute.js',
 ];
 
-swaggerAutogen()(outputFile, routes, doc);
+swaggerAutogen({ openapi: '3.0.0' })(outputFile, routes, doc);
