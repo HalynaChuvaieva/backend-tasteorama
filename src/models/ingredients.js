@@ -18,7 +18,7 @@ const ingredientsSchema = new Schema(
       // default: 'sadsdsadasfasfdasfas'
     },
     _id: {
-      type: Schema.Types.ObjectId,
+      type: String,
       required: true,
     },
   },
