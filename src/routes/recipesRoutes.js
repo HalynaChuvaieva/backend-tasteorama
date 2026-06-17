@@ -23,6 +23,8 @@ const router = Router();
 
 router.get('/api/recipes', celebrate(getAllRecipesSchema), getAllRecipes);
 
+router.get('/api/recipes/favorites', authenticate, getFavoriteRecipes);
+
 router.get('/api/recipes/:recipeId', celebrate(recipeIdSchema), getRecipeById);
 router.post(
   '/api/recipes/',
@@ -39,7 +41,6 @@ router.post(
   celebrate(recipeIdSchema),
   addRecipeToFavorites,
 );
-router.get('/api/recipes/favorites', authenticate, getFavoriteRecipes);
 
 router.delete(
   '/api/recipes/:recipeId/favorite',
