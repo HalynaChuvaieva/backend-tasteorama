@@ -2,10 +2,13 @@ import { getAllIngredients } from '../services/ingredients.js';
 
 export const getIngredients = async (req, res, next) => {
   try {
-    const ingredients = await getAllIngredients();
+    const { name } = req.query;
+    const filter = {};
+    if (name) filter.name = { $regex: name, $options: 'i' };
+
+    const ingredients = await getAllIngredients(filter);
     res.status(200).json(ingredients);
   } catch (error) {
-    console.error('Failed to fetch ingredients:', error.message);
     next(error);
   }
 };
