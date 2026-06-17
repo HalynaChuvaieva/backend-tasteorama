@@ -6,6 +6,10 @@ import { getIngredientsSchema } from '../validations/ingredientsValidation.js';
 
 const ingredientsRouter = Router();
 
-ingredientsRouter.get('/ingredients', celebrate(getIngredientsSchema), getIngredients);
+ingredientsRouter.get(
+  'api/ingredients',
+  celebrate(getIngredientsSchema),
+  getIngredients,
+);
 
 export default ingredientsRouter;
