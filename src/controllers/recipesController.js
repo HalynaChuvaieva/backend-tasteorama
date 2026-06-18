@@ -5,7 +5,7 @@ import {
 } from '../services/recipes.js';
 import { Recipe } from '../models/recipe.js';
 import { Ingredient } from '../models/ingredient.js';
-import { Category } from '../models/category.js';
+import { Categories } from '../models/categories.js';
 import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
 import { User } from '../models/user.js';
 
@@ -105,7 +105,7 @@ export const createRecipe = async (req, res) => {
     instructions,
   } = req.body;
 
-  const categoryExists = await Category.findOne({ name: category });
+  const categoryExists = await Categories.findOne({ name: category });
   if (!categoryExists) {
     throw createHttpError(400, 'Category not found');
   }
