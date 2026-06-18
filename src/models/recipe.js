@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { Categories } from './categories.js';
+// import { Categories } from './categories.js';
 // import { Ingredient } from './ingredient.js';
 
 const recipeIngredientSchema = new Schema(
@@ -38,6 +38,7 @@ const recipeSchema = new Schema(
     ingredients: {
       type: [recipeIngredientSchema],
       default: [],
+      required: true,
     },
     instructions: {
       type: String,
@@ -46,7 +47,7 @@ const recipeSchema = new Schema(
     },
     image: {
       type: String,
-      required: true,
+      default: null,
     },
     owner: {
       type: Schema.Types.ObjectId,
