@@ -157,8 +157,6 @@ export const getMyRecipes = async (req, res) => {
     recipes,
   });
 };
-export const deleteRecipe = async (req, res) => {};
-export const updateRecipe = async (req, res) => {};
 
 // Видаляємо рецепт з улюблених користувача
 export const deleteRecipeFromFavorite = async (req, res, next) => {
@@ -218,6 +216,12 @@ export const getFavoriteRecipes = async (req, res, next) => {
   try {
     const userId = req.user._id; // Отримуємо ID користувача з об'єкта req.user
 
+    const { page = 1, perPage = 12 } = req.query;  
+
+    const parsedPage = Number(page);
+    const parsedPerPage = Number(perPage);
+    const skip = (parsedPage - 1) * parsedPerPage;
+
     const user = await User.findById(userId).populate({
       // Знаходимо користувача за його ID та виконуємо популяцію поля favorites
       path: 'favorites', // Вказуємо шлях до поля favorites, яке містить масив ID рецептів
@@ -234,12 +238,17 @@ export const getFavoriteRecipes = async (req, res, next) => {
     }
 
     const favorites = user.favorites || []; // Отримуємо масив улюблених рецептів користувача. Якщо favorites відсутній, використовуємо порожній масив за замовчуванням
-
+    const totalFavorites = favorites.length; // Загальна кількість улюблених рецептів
+    const totalPages = Math.ceil(totalFavorites / parsedPerPage);// Обчислюємо загальну кількість сторінок на основі кількості улюблених рецептів та кількості рецептів на сторінку
+    const recipes = favorites.slice(skip, skip + parsedPerPage);// Використовуємо метод slice для отримання підмасиву рецептів, які відповідають поточній сторінці та кількості рецептів на сторінку
     res.status(200).json({
       status: 200,
       message: 'Favorite recipes retrieved successfully',
-      total: favorites.length,
-      data: favorites,
+      page: parsedPage,
+      perPage: parsedPerPage,
+      totalFavorites,
+      totalPages,
+      recipes,
     });
   } catch (error) {
     next(error);
