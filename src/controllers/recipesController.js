@@ -91,9 +91,6 @@ export const getRecipeById = async (req, res, next) => {
 
 export const createRecipe = async (req, res) => {
   console.log(req.file, req.user);
-  if (!req.file) {
-    throw createHttpError(400, 'No file');
-  }
 
   const {
     title,
@@ -119,8 +116,11 @@ export const createRecipe = async (req, res) => {
     throw createHttpError(400, 'One or more ingredients not found');
   }
 
-  const result = await saveFileToCloudinary(req.file.buffer, req.user._id);
-  console.log(result);
+  let result = null;
+  if (req.file) {
+    result = await saveFileToCloudinary(req.file.buffer, req.user._id);
+    console.log(result);
+  }
 
   const recipe = await Recipe.create({
     title,
@@ -131,7 +131,7 @@ export const createRecipe = async (req, res) => {
     ingredients,
     instructions,
     owner: req.user._id,
-    image: result.secure_url,
+    image: result?.secure_url || null,
   });
   res.status(201).json(recipe);
 };
