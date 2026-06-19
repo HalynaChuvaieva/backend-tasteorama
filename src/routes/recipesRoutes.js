@@ -16,7 +16,6 @@ import {
   recipeIdSchema,
   createRecipeSchema,
 } from '../validations/recipesValidation.js';
-import { parseIngredients } from '../middleware/recipeParse.js';
 import { upload } from '../middleware/multer.js';
 
 const router = Router();
@@ -30,7 +29,6 @@ router.post(
   '/api/recipes/',
   authenticate,
   upload.single('image'),
-  parseIngredients,
   celebrate(createRecipeSchema),
   createRecipe,
 );
