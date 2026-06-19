@@ -11,7 +11,7 @@ import { User } from '../models/user.js';
 
 export const getAllRecipes = async (req, res, next) => {
   try {
-    const { page = 1, perPage = 10, category, ingredient, keyword } = req.query;
+    const { page = 1, perPage = 12, category, ingredient, keyword } = req.query;
 
     const parsedPage = Number(page);
     const parsedPerPage = Number(perPage);
@@ -30,25 +30,21 @@ export const getAllRecipes = async (req, res, next) => {
       recipesQuery.where({ category: { $regex: category, $options: 'i' } });
     }
 
-    // 3. Пошук за НАЗВОЮ інгредієнта
-    if (ingredient) {
-      // Крок А: Шукаємо інгредієнт за назвою в колекції Ingredients
-      const foundIngredient = await Ingredient.findOne({
-        name: { $regex: ingredient, $options: 'i' }, // 'i' означає case-insensitive
+  if (ingredient) {
+      const foundIngredients = await Ingredient.find({
+        name: { $regex: ingredient, $options: 'i' },
       });
 
-      if (foundIngredient) {
-        // Крок Б: Якщо інгредієнт знайдено, беремо його ID і фільтруємо рецепти
-        // Оскільки в базі ID збережено як рядок, перетворюємо foundIngredient._id на String
-        recipesQuery
-          .where('ingredients.id')
-          .equals(foundIngredient._id.toString());
+      if (foundIngredients.length > 0) {
+        const ingredientIds = foundIngredients.map(ing => ing._id);
+
+        recipesQuery.where('ingredients.id').in(ingredientIds);
+
       } else {
-        // Крок В: Якщо такого інгредієнта не існує, змушуємо запит повернути порожній масив
-        // (шукаємо за гарантовано неіснуючим значенням)
-        recipesQuery.where('ingredients.id').equals('not-found');
+        recipesQuery.where('_id').equals('000000000000000000000000'); // Поверне []
       }
     }
+
 
     const [totalRecipes, recipes] = await Promise.all([
       recipesQuery.clone().countDocuments(),
@@ -216,7 +212,7 @@ export const getFavoriteRecipes = async (req, res, next) => {
   try {
     const userId = req.user._id; // Отримуємо ID користувача з об'єкта req.user
 
-    const { page = 1, perPage = 12 } = req.query;  
+    const { page = 1, perPage = 12 } = req.query;
 
     const parsedPage = Number(page);
     const parsedPerPage = Number(perPage);
