@@ -15,6 +15,7 @@ import {
   getMyRecipesSchema,
   recipeIdSchema,
   createRecipeSchema,
+  getFavoriteRecipesSchema,
 } from '../validations/recipesValidation.js';
 import { upload } from '../middleware/multer.js';
 
@@ -22,7 +23,11 @@ const router = Router();
 
 router.get('/api/recipes', celebrate(getAllRecipesSchema), getAllRecipes);
 
-router.get('/api/recipes/favorites', authenticate, getFavoriteRecipes);
+router.get(
+  '/api/recipes/favorites',
+  authenticate,
+  celebrate(getFavoriteRecipesSchema),
+  getFavoriteRecipes);
 
 router.get('/api/recipes/:recipeId', celebrate(recipeIdSchema), getRecipeById);
 router.post(
