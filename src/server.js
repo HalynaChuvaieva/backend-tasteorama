@@ -20,16 +20,15 @@ const app = express();
 
 app.use(logger);
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cookieParser());
 
 app.use(authRoutes);
 app.use(recipesRoutes);
+app.use(ingredientsRouter);
 app.use(categoriesRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(userRoutes);
-
-app.use(ingredientsRouter);
 
 app.use(notFoundHandler);
 
