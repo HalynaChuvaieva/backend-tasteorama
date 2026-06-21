@@ -11,7 +11,7 @@ import { User } from '../models/user.js';
 
 export const getAllRecipes = async (req, res, next) => {
   try {
-    const { page = 1, perPage = 10, category, ingredient, keyword } = req.query;
+    const { page = 1, perPage = 12, category, ingredient, keyword } = req.query;
 
     const parsedPage = Number(page);
     const parsedPerPage = Number(perPage);
@@ -30,25 +30,21 @@ export const getAllRecipes = async (req, res, next) => {
       recipesQuery.where({ category: { $regex: category, $options: 'i' } });
     }
 
-    // 3. Пошук за НАЗВОЮ інгредієнта
-    if (ingredient) {
-      // Крок А: Шукаємо інгредієнт за назвою в колекції Ingredients
-      const foundIngredient = await Ingredient.findOne({
-        name: { $regex: ingredient, $options: 'i' }, // 'i' означає case-insensitive
+  if (ingredient) {
+      const foundIngredients = await Ingredient.find({
+        name: { $regex: ingredient, $options: 'i' },
       });
 
-      if (foundIngredient) {
-        // Крок Б: Якщо інгредієнт знайдено, беремо його ID і фільтруємо рецепти
-        // Оскільки в базі ID збережено як рядок, перетворюємо foundIngredient._id на String
-        recipesQuery
-          .where('ingredients.id')
-          .equals(foundIngredient._id.toString());
+      if (foundIngredients.length > 0) {
+        const ingredientIds = foundIngredients.map(ing => ing._id);
+
+        recipesQuery.where('ingredients.id').in(ingredientIds);
+
       } else {
-        // Крок В: Якщо такого інгредієнта не існує, змушуємо запит повернути порожній масив
-        // (шукаємо за гарантовано неіснуючим значенням)
-        recipesQuery.where('ingredients.id').equals('not-found');
+        recipesQuery.where('_id').equals('000000000000000000000000'); // Поверне []
       }
     }
+
 
     const [totalRecipes, recipes] = await Promise.all([
       recipesQuery.clone().countDocuments(),
@@ -91,9 +87,6 @@ export const getRecipeById = async (req, res, next) => {
 
 export const createRecipe = async (req, res) => {
   console.log(req.file, req.user);
-  if (!req.file) {
-    throw createHttpError(400, 'No file');
-  }
 
   const {
     title,
@@ -119,8 +112,11 @@ export const createRecipe = async (req, res) => {
     throw createHttpError(400, 'One or more ingredients not found');
   }
 
-  const result = await saveFileToCloudinary(req.file.buffer, req.user._id);
-  console.log(result);
+  let result = null;
+  if (req.file) {
+    result = await saveFileToCloudinary(req.file.buffer, req.user._id);
+    console.log(result);
+  }
 
   const recipe = await Recipe.create({
     title,
@@ -131,7 +127,7 @@ export const createRecipe = async (req, res) => {
     ingredients,
     instructions,
     owner: req.user._id,
-    image: result.secure_url,
+    image: result?.secure_url || null,
   });
   res.status(201).json(recipe);
 };
@@ -157,8 +153,6 @@ export const getMyRecipes = async (req, res) => {
     recipes,
   });
 };
-export const deleteRecipe = async (req, res) => {};
-export const updateRecipe = async (req, res) => {};
 
 // Видаляємо рецепт з улюблених користувача
 export const deleteRecipeFromFavorite = async (req, res, next) => {
@@ -218,6 +212,12 @@ export const getFavoriteRecipes = async (req, res, next) => {
   try {
     const userId = req.user._id; // Отримуємо ID користувача з об'єкта req.user
 
+    const { page = 1, perPage = 12 } = req.query;
+
+    const parsedPage = Number(page);
+    const parsedPerPage = Number(perPage);
+    const skip = (parsedPage - 1) * parsedPerPage;
+
     const user = await User.findById(userId).populate({
       // Знаходимо користувача за його ID та виконуємо популяцію поля favorites
       path: 'favorites', // Вказуємо шлях до поля favorites, яке містить масив ID рецептів
@@ -234,12 +234,17 @@ export const getFavoriteRecipes = async (req, res, next) => {
     }
 
     const favorites = user.favorites || []; // Отримуємо масив улюблених рецептів користувача. Якщо favorites відсутній, використовуємо порожній масив за замовчуванням
-
+    const totalFavorites = favorites.length; // Загальна кількість улюблених рецептів
+    const totalPages = Math.ceil(totalFavorites / parsedPerPage);// Обчислюємо загальну кількість сторінок на основі кількості улюблених рецептів та кількості рецептів на сторінку
+    const recipes = favorites.slice(skip, skip + parsedPerPage);// Використовуємо метод slice для отримання підмасиву рецептів, які відповідають поточній сторінці та кількості рецептів на сторінку
     res.status(200).json({
       status: 200,
       message: 'Favorite recipes retrieved successfully',
-      total: favorites.length,
-      data: favorites,
+      page: parsedPage,
+      perPage: parsedPerPage,
+      totalFavorites,
+      totalPages,
+      recipes,
     });
   } catch (error) {
     next(error);

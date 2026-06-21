@@ -36,6 +36,7 @@ const recipeSchema = new Schema(
     ingredients: {
       type: [recipeIngredientSchema],
       default: [],
+      required: true,
     },
     instructions: {
       type: String,
@@ -44,7 +45,7 @@ const recipeSchema = new Schema(
     },
     image: {
       type: String,
-      required: true,
+      default: null,
     },
     owner: {
       type: Schema.Types.ObjectId,

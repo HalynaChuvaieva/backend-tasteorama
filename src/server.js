@@ -18,9 +18,16 @@ import ingredientsRouter from './routes/ingredientsRoute.js';
 const PORT = process.env.PORT ?? 3000;
 const app = express();
 
+app.use(cors({
+  origin: function (origin, callback) {
+    callback(null, true);
+  },
+  credentials: true
+}));
+
 app.use(logger);
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors());
 app.use(cookieParser());
 
 app.use(authRoutes);
