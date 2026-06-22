@@ -4,7 +4,7 @@ import { isValidObjectId } from 'mongoose';
 export const getAllRecipesSchema = {
   [Segments.QUERY]: Joi.object({
     page: Joi.number().integer().min(1).default(1),
-    perPage: Joi.number().integer().min(1).max(50).default(10),
+    perPage: Joi.number().integer().min(1).max(50).default(12),
     category: Joi.string(),
     ingredient: Joi.string(),
     keyword: Joi.string().trim().allow(''),
@@ -14,7 +14,7 @@ export const getAllRecipesSchema = {
 export const getMyRecipesSchema = {
   [Segments.QUERY]: Joi.object({
     page: Joi.number().integer().min(1).default(1),
-    perPage: Joi.number().integer().min(1).max(50).default(10),
+    perPage: Joi.number().integer().min(1).max(50).default(12),
   }),
 };
 
@@ -33,7 +33,7 @@ const parseAndValidateIngredients = (value, helpers) => {
 
   try {
     parsedValue = typeof value === 'string' ? JSON.parse(value) : value;
-  } catch (err) {
+  } catch {
     return helpers.message('"ingredients" must be a valid JSON string');
   }
 
