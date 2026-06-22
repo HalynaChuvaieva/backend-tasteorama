@@ -131,7 +131,7 @@ export const createRecipe = async (req, res) => {
     ingredients,
     instructions,
     owner: req.user._id,
-    image: result?.secure_url || null,
+    thumb: result?.secure_url || null,
   });
   res.status(201).json(recipe);
 };
