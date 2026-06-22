@@ -133,7 +133,7 @@ export const createRecipe = async (req, res) => {
 };
 
 export const getMyRecipes = async (req, res) => {
-  const { page = 1, perPage = 10 } = req.query;
+  const { page = 1, perPage = 12 } = req.query;
 
   const parsedPage = Number(page);
   const parsedPerPage = Number(perPage);
