@@ -1,6 +1,4 @@
 import { Schema, model } from 'mongoose';
-// import { Categories } from './categories.js';
-// import { Ingredient } from './ingredient.js';
 
 const recipeIngredientSchema = new Schema(
   {

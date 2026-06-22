@@ -15,7 +15,6 @@ const ingredientsSchema = new Schema(
     img: {
       type: String,
       required: false,
-      // default: 'sadsdsadasfasfdasfas'
     },
     _id: {
       type: String,
