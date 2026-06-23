@@ -5,8 +5,8 @@ export const getAllRecipesSchema = {
   [Segments.QUERY]: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     perPage: Joi.number().integer().min(1).max(50).default(12),
-    category: Joi.string(),
-    ingredient: Joi.string(),
+    category: Joi.string().allow(''),
+    ingredient: Joi.string().allow(''),
     keyword: Joi.string().trim().allow(''),
   }),
 };
