@@ -20,8 +20,10 @@ const app = express();
 
 app.use(
   cors({
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'], // дозволені запити
-    origin: '*', // дає доступ робити забити з різних джерел
+    origin: function (origin, callback) {
+      callback(null, true);
+    },
+    credentials: true,
   }),
 );
 
