@@ -47,6 +47,13 @@ export const loginUser = async (req, res) => {
   res.status(200).json(user);
 };
 
+export const getAuthSession = async (req, res) => {
+  res.status(200).json({
+    authenticated: true,
+    user: req.user,
+  });
+};
+
 export const refreshUserSession = async (req, res) => {
   const { sessionId, refreshToken } = req.cookies;
 
