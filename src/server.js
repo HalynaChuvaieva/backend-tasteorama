@@ -18,12 +18,12 @@ import ingredientsRouter from './routes/ingredientsRoute.js';
 const PORT = process.env.PORT ?? 3000;
 const app = express();
 
-app.use(cors({
-  origin: function (origin, callback) {
-    callback(null, true);
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'], // дозволені запити
+    origin: '*', // дає доступ робити забити з різних джерел
+  }),
+);
 
 app.use(logger);
 app.use(express.json());
