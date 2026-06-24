@@ -10,10 +10,8 @@ cloudinary.config({
 export async function saveFileToCloudinary(buffer, userId) {
   const options = {
     folder: 'recipes-app/avatars',
-    public_id: `image_${userId}`,
+    public_id: `recipe_${userId}_${Date.now()}`,
     resource_type: 'image',
-    overwrite: true,
-    unique_filename: false,
     transformation: [
       { width: 500, height: 500, crop: 'fill', gravity: 'auto' },
       { fetch_format: 'auto', quality: 'auto' },
