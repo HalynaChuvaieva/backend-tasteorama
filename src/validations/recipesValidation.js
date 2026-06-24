@@ -66,6 +66,7 @@ export const createRecipeSchema = {
     category: Joi.string().required(),
     ingredients: Joi.any().custom(parseAndValidateIngredients).required(),
     instructions: Joi.string().max(1200).required(),
+    image: Joi.any().optional(),
   }),
 };
 export const updateRecipeSchema = {};
