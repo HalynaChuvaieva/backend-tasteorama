@@ -30,21 +30,19 @@ export const getAllRecipes = async (req, res, next) => {
       recipesQuery.where({ category: { $regex: category, $options: 'i' } });
     }
 
-  if (ingredient) {
+    if (ingredient) {
       const foundIngredients = await Ingredient.find({
         name: { $regex: ingredient, $options: 'i' },
       });
 
       if (foundIngredients.length > 0) {
-        const ingredientIds = foundIngredients.map(ing => ing._id);
+        const ingredientIds = foundIngredients.map((ing) => ing._id);
 
         recipesQuery.where('ingredients.id').in(ingredientIds);
-
       } else {
         recipesQuery.where('_id').equals('000000000000000000000000'); // Поверне []
       }
     }
-
 
     const [totalRecipes, recipes] = await Promise.all([
       recipesQuery.clone().countDocuments(),
@@ -115,7 +113,10 @@ export const createRecipe = async (req, res) => {
     result = await saveFileToCloudinary(req.file.buffer, req.user._id);
     console.log('[createRecipe] Cloudinary result:', result?.secure_url);
   } else {
-    console.log('[createRecipe] req.file is undefined — image field in body:', req.body.image);
+    console.log(
+      '[createRecipe] req.file is undefined — image field in body:',
+      req.body.image,
+    );
   }
 
   const recipe = await Recipe.create({
@@ -235,14 +236,14 @@ export const getFavoriteRecipes = async (req, res, next) => {
 
     const favorites = user.favorites || []; // Отримуємо масив улюблених рецептів користувача. Якщо favorites відсутній, використовуємо порожній масив за замовчуванням
     const totalFavorites = favorites.length; // Загальна кількість улюблених рецептів
-    const totalPages = Math.ceil(totalFavorites / parsedPerPage);// Обчислюємо загальну кількість сторінок на основі кількості улюблених рецептів та кількості рецептів на сторінку
-    const recipes = favorites.slice(skip, skip + parsedPerPage);// Використовуємо метод slice для отримання підмасиву рецептів, які відповідають поточній сторінці та кількості рецептів на сторінку
+    const totalPages = Math.ceil(totalFavorites / parsedPerPage); // Обчислюємо загальну кількість сторінок на основі кількості улюблених рецептів та кількості рецептів на сторінку
+    const recipes = favorites.slice(skip, skip + parsedPerPage); // Використовуємо метод slice для отримання підмасиву рецептів, які відповідають поточній сторінці та кількості рецептів на сторінку
     res.status(200).json({
       status: 200,
       message: 'Favorite recipes retrieved successfully',
       page: parsedPage,
       perPage: parsedPerPage,
-      totalFavorites,
+      totalRecipes: totalFavorites,
       totalPages,
       recipes,
     });
